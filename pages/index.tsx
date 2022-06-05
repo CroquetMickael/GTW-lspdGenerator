@@ -13,7 +13,7 @@ const Home: NextPage = () => {
       </Head>
 
       <Layout>
-        <FormBuilder />
+        Un simple générateur de formulaire pour le LSPD de GTW 😊
       </Layout>
     </div>
   );
