@@ -4,14 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import "formeo/dist/formeo.min.css";
 import { Layout } from "../../Layout/Layout";
+import { Editor } from "../../components/Editor";
+import { typeRapport } from "../../helpers/dictionnary";
+import { useForm } from "../../context/form.context";
 
 const Post = () => {
   const [formeo, setFormeo] = useState<any>();
+  const { forms } = useForm();
   const renderer = useRef<any>();
   const router = useRouter();
   const { name } = router.query;
   const textTomodify = useRef("");
   const [textModified, setTextModified] = useState("");
+  const [type, setType] = useState("");
+  const input = useRef();
 
   useEffect(() => {
     const findFormeo = async () => {
@@ -22,19 +28,16 @@ const Post = () => {
   }, []);
 
   useEffect(() => {
-    if (name && formeo) {
-      fetch(`/api/forms/${name}`)
-        .then((res) => res)
-        .then((data: any) => data.json())
-        .then((formData) => {
-          renderer.current = new formeo.FormeoRenderer({
-            renderContainer: ".formeo-wrap",
-          });
-          renderer.current?.render(formData.form);
-          textTomodify.current = formData.textToEdit;
-        });
+    if (name && formeo && forms.length > 0) {
+      const currentForm = forms.find((form: any) => form.id === name);
+      renderer.current = new formeo.FormeoRenderer({
+        renderContainer: ".formeo-wrap",
+      });
+      renderer.current?.render(JSON.parse(currentForm.form));
+      textTomodify.current = currentForm.textToEdit.text;
+      setType(currentForm.type);
     }
-  }, [formeo, name]);
+  }, [formeo, forms, name, forms.length]);
 
   const onClickButton = () => {
     let localtext = textTomodify.current;
@@ -47,7 +50,11 @@ const Post = () => {
         formItem.querySelectorAll("textarea, input").forEach((textArea) => {
           values.push(textArea.value as string);
         });
-        finalValues.push(values.join("\n"));
+        const valuesJoined =
+          type === typeRapport.Intranet
+            ? values.join("\n")
+            : values.join("<br/>");
+        finalValues.push(valuesJoined);
       } else {
         formItem.querySelectorAll("textarea, input").forEach((input) => {
           finalValues.push(input?.value);
@@ -55,7 +62,6 @@ const Post = () => {
       }
     });
     const formatedValues = finalValues.filter((value) => value !== undefined);
-    console.log(finalValues);
     formatedValues.forEach((value: any, index) => {
       const localIndex = index + 1;
       localtext = localtext.replace(`{${localIndex}}`, value);
@@ -65,14 +71,25 @@ const Post = () => {
   return (
     <Layout>
       <form className="formeo-wrap" id="form"></form>
-      <label className="text-white flex flex-col w-1/2">
-        Formulaire :
-        <textarea
-          className="h-full text-black whitespace-pre-wrap"
-          value={textModified}
-        />
+      <label className=" flex flex-col w-1/2">
+        <span className="text-white">Formulaire Généré :</span>
+        {type === typeRapport.Intranet ? (
+          <textarea
+            ref={input}
+            className="h-full text-black whitespace-pre-wrap"
+            value={textModified}
+          />
+        ) : (
+          <Editor
+            ref={input}
+            content={textModified}
+            setContent={setTextModified}
+          />
+        )}
       </label>
-      <Button onClick={() => onClickButton()}>Générer</Button>
+      <div className="flex gap-6">
+        <Button onClick={() => onClickButton()}>Générer</Button>
+      </div>
     </Layout>
   );
 };

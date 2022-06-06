@@ -3,21 +3,19 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FormBuilder } from "../../../components/FormBuilder";
+import { useForm } from "../../../context/form.context";
 import { Layout } from "../../../Layout/Layout";
 
 const Home: NextPage = () => {
-  const [currentForm, setCurrentForm] = useState({
-    form: undefined,
-  });
+  const [currentForm, setCurrentForm] = useState();
+  const { forms } = useForm();
   const router = useRouter();
   const { name } = router.query;
   useEffect(() => {
     if (name) {
-      fetch(`/api/forms/${name}`)
-        .then((res) => res.json())
-        .then((data: any) => setCurrentForm(data));
+      setCurrentForm(forms.find((form: any) => form.id === name));
     }
-  }, [name]);
+  }, [forms, name]);
   return (
     <>
       <Head>

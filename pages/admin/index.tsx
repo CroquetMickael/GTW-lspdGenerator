@@ -4,25 +4,23 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FormBuilder } from "../../components/FormBuilder";
 import { Modal } from "../../components/Modal/Modal";
+import { useForm } from "../../context/form.context";
+import { typeRapport } from "../../helpers/dictionnary";
 import { useModal } from "../../hooks/useModal";
 import { Layout } from "../../Layout/Layout";
 
 const Home: NextPage = () => {
   const [deleteName, setDeleteName] = useState("");
-  const [forms, setForms] = useState([]);
+  const [deleteId, setDeleteId] = useState("");
+  const { forms } = useForm();
   const { isOpen, openModal } = useModal();
   const router = useRouter();
-  useEffect(() => {
-    fetch("/api/forms")
-      .then((result) => result.json())
-      .then((forms) => setForms(forms));
-  }, []);
 
   const deleteForm = () => {
     fetch("/api/forms/delete", {
       method: "DELETE",
       body: JSON.stringify({
-        name: deleteName,
+        id: deleteId,
       }),
     })
       .then((result) => router.reload())
@@ -46,7 +44,7 @@ const Home: NextPage = () => {
         <p>êtes-vous sur de votre action ?</p>
       </Modal>
       <Layout>
-        <div className="w-full xl:w-1/3">
+        <div className="w-full px-64">
           <table className="w-full bg-white shadow-md rounded">
             <tbody>
               <tr className="border-b">
@@ -54,33 +52,40 @@ const Home: NextPage = () => {
                 <th className="text-left p-2 px-5">Type</th>
                 <th></th>
               </tr>
-              {forms?.map((form: { nom: string; isBBCode: boolean }) => (
-                <tr key={form.nom} className="border-b">
-                  <td className="p-2 px-5 text-xl">{form.nom}</td>
-                  <td className="p-2 px-5 text-xl">
-                    {form.isBBCode ? "Intranet" : "MDC"}
-                  </td>
-                  <td className="p-2 px-5 flex justify-end">
-                    <a
-                      href={`/admin/form/${form.nom.toLocaleLowerCase()}`}
-                      type="button"
-                      className="mr-3  bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Editer
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        openModal();
-                        setDeleteName(form.nom);
-                      }}
-                      className="bg-red-500 hover:bg-red-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {forms?.map(
+                (form: {
+                  nom: string;
+                  type: keyof typeof typeRapport;
+                  id: string;
+                }) => (
+                  <tr key={form.nom} className="border-b">
+                    <td className="p-2 px-5 text-xl">{form.nom}</td>
+                    <td className="p-2 px-5 text-xl">
+                      {typeRapport[form.type]}
+                    </td>
+                    <td className="p-2 px-5 flex justify-end">
+                      <a
+                        href={`/admin/form/${form.id}`}
+                        type="button"
+                        className="mr-3  bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
+                      >
+                        Editer
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          openModal();
+                          setDeleteName(form.nom);
+                          setDeleteId(form.id);
+                        }}
+                        className="bg-red-500 hover:bg-red-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
+                      >
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
           <a

@@ -1,12 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { formsRepo } from "../../../helpers/form-repo";
-import { linksRepo } from "../../../helpers/link-repo";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "DELETE") {
-    const { name } = JSON.parse(req.body);
-    formsRepo.deleteForm(name as string);
-    linksRepo.deleteLien(name as string);
+    const { id } = JSON.parse(req.body);
+    formsRepo.deleteForm(id as string);
     return res.status(200).json({});
   }
 }

@@ -1,43 +1,57 @@
-const fs = require("fs");
-
+import { PrismaClient } from "@prisma/client";
 // users in JSON file for simplicity, store in a db for production applications
-let forms: any[] = require("../data/form.json");
+
+const prisma = new PrismaClient();
 
 export const formsRepo = {
-  getAll: () => forms,
-  find: (name: string) =>
-    forms.find((form: any) => {
-      return new RegExp(name, "i").test(form?.nom);
-    }),
+  getAll,
+  find,
   create,
   deleteForm,
   update,
 };
 
-function create(form: any) {
-  forms.push(form);
-  saveData();
+async function getAll() {
+  const forms = await prisma.forms.findMany();
+  return forms;
 }
-
-function saveData() {
-  fs.writeFileSync("data/form.json", JSON.stringify(forms, null, 4));
-}
-
-function deleteForm(nom: string) {
-  const formsUpdated = forms.filter((form: any) => {
-    const nomForm = new RegExp(nom, "i");
-    return !nomForm.test(form?.nom);
+async function create(form: any) {
+  await prisma.forms.create({
+    data: {
+      ...form,
+      form: JSON.stringify(form.form),
+      textToEdit: JSON.stringify(form.textToEdit),
+    },
   });
-
-  forms = formsUpdated;
-  saveData();
 }
 
-function update(nom: string, formToUpdate: any) {
-  delete formToUpdate?.oldName;
-  const index = forms.findIndex((form: any) =>
-    new RegExp(nom, "i").test(form?.nom)
-  );
-  forms.splice(index, 1, formToUpdate);
-  saveData();
+async function find(name: string) {
+  const form = await prisma.forms.findUnique({
+    where: {
+      id: name,
+    },
+  });
+  return form;
+}
+
+async function deleteForm(nom: string) {
+  await prisma.forms.delete({
+    where: {
+      id: nom,
+    },
+  });
+}
+
+async function update(nom: string, formToUpdate: any) {
+  delete formToUpdate.oldName;
+  await prisma.forms.update({
+    where: {
+      id: nom,
+    },
+    data: {
+      ...formToUpdate,
+      form: JSON.stringify(formToUpdate.form),
+      textToEdit: formToUpdate.textToEdit,
+    },
+  });
 }

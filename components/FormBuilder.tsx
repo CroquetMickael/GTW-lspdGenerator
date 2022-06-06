@@ -1,40 +1,15 @@
-import {
-  Dispatch,
-  FunctionComponent,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
 
 import "formeo/dist/formeo.min.css";
 import { Button } from "./Button/Button";
-import dynamic from "next/dynamic";
-
-const Editor: FunctionComponent<{
-  content: string;
-  setContent: Dispatch<SetStateAction<string>>;
-}> = ({ content, setContent }) => {
-  const importJodit = () => import("jodit-react");
-
-  const JoditEditor = dynamic(importJodit, {
-    ssr: false,
-  });
-
-  return (
-    <JoditEditor
-      value={content}
-      onBlur={(newContent) => setContent(newContent)} // preferred to use only this option to update the content for performance reasons
-      onChange={(newContent) => {}}
-    />
-  );
-};
+import { Editor } from "./Editor";
+import { typeRapport } from "../helpers/dictionnary";
 
 const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
   const [formName, setFormName] = useState("");
   const [formeo, setFormeo] = useState<any>();
   const [content, setContent] = useState<string>("");
-  const [isBBCode, setIsBBCode] = useState(false);
+  const [type, setType] = useState(typeRapport.Intranet);
   const editor = useRef<any>();
   useEffect(() => {
     const findFormeo = async () => {
@@ -65,11 +40,13 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
         },
         formData?.form
       );
-      setFormName(formData?.nom);
-      setContent(formData?.textToEdit);
-      setIsBBCode(formData?.isBBCode);
+      if (formData && formData?.textToEdit) {
+        setFormName(formData?.nom);
+        setContent(formData?.textToEdit.text);
+        setType(formData?.type);
+      }
     }
-  }, [formeo, formData]);
+  }, [formeo, formData?.textToEdit?.text, formData]);
 
   return (
     <div className="w-full px-6 xl:px-96 flex gap-4">
@@ -97,31 +74,40 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
           <ul className="flex gap-6">
             <li
               className={`bg-white rounded-lg p-2 cursor-pointer ${
-                isBBCode ? "border-b-8 border-green-300" : ""
+                typeRapport.Intranet === type
+                  ? "border-b-8 border-green-300"
+                  : ""
               }`}
-              onClick={() => setIsBBCode(true)}
+              onClick={() => setType(typeRapport.Intranet)}
             >
-              BBCode
+              Intranet
             </li>
             <li
               className={`bg-white rounded-lg p-2 cursor-pointer ${
-                !isBBCode ? "border-b-8 border-green-300" : ""
+                typeRapport.MDC === type ? "border-b-8 border-green-300" : ""
               }`}
-              onClick={() => setIsBBCode(false)}
+              onClick={() => setType(typeRapport.MDC)}
             >
-              HTML
+              MDC
+            </li>
+            <li
+              className={`bg-white rounded-lg p-2 cursor-pointer ${
+                typeRapport.Forum === type ? "border-b-8 border-green-300" : ""
+              }`}
+              onClick={() => setType(typeRapport.Forum)}
+            >
+              Forum
             </li>
           </ul>
         </div>
         <div className="bg-white">
-          {isBBCode ? (
+          {typeRapport.Intranet === type ? (
             <textarea
               className="w-full h-96 flex"
               placeholder="Mettre le BBCode à modifier ici"
+              value={content}
               onChange={(value) => setContent(value.target.value)}
-            >
-              {content}
-            </textarea>
+            />
           ) : (
             <Editor content={content} setContent={setContent} />
           )}
@@ -134,19 +120,19 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
                     method: "POST",
                     body: JSON.stringify({
                       nom: formName,
-                      isBBCode,
+                      type,
                       form: editor?.current?.formData,
-                      textToEdit: content,
+                      textToEdit: { text: content},
                     }),
                   })
                 : fetch("/api/forms/update", {
                     method: "PUT",
                     body: JSON.stringify({
-                      oldName: formData?.nom,
-                      isBBCode,
+                      oldName: formData?.id,
+                      type,
                       nom: formName,
                       form: editor?.current?.formData,
-                      textToEdit: content,
+                      textToEdit: { text: content},
                     }),
                   });
             }
