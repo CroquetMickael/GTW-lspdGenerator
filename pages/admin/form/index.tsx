@@ -1,9 +1,18 @@
+import { withIronSessionSsr } from "iron-session/next";
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useEffect } from "react";
 import { FormBuilder } from "../../../components/FormBuilder";
-import { Layout } from "../../../Layout/Layout";
+import { sessionOptions } from "../../../helpers/session";
+import useSessionStorage from "../../../hooks/useSessionStorage";
 
 const Home: NextPage = () => {
+  const isLogged = useSessionStorage("isLogged");
+  useEffect(() => {
+    if (!isLogged) {
+      sessionStorage.setItem("isLogged", "true");
+    }
+  }, [isLogged])
   return (
     <>
       <Head>
@@ -12,11 +21,29 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Layout>
-        <FormBuilder />
-      </Layout>
+      <FormBuilder />
     </>
   );
 };
+
+export const getServerSideProps = withIronSessionSsr(async function getServerSideProps({
+  req,
+  res,
+}) {
+  const isLogged = req.session.isLogged;
+
+  if (isLogged === undefined || isLogged === false) {
+    res.setHeader("location", "/login");
+    res.statusCode = 302;
+    res.end();
+  }
+
+  return {
+    props: {
+
+    }
+  };
+},
+  sessionOptions);
 
 export default Home;

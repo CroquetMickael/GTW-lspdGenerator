@@ -2,12 +2,13 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FormBuilder } from "../../components/FormBuilder";
 import { Modal } from "../../components/Modal/Modal";
 import { useForm } from "../../context/form.context";
 import { typeRapport } from "../../helpers/dictionnary";
 import { useModal } from "../../hooks/useModal";
-import { Layout } from "../../Layout/Layout";
+import { withIronSessionSsr } from "iron-session/next"
+import { sessionOptions } from "../../helpers/session";
+import useSessionStorage from "../../hooks/useSessionStorage";
 
 const Home: NextPage = () => {
   const [deleteName, setDeleteName] = useState("");
@@ -15,6 +16,12 @@ const Home: NextPage = () => {
   const { forms } = useForm();
   const { isOpen, openModal } = useModal();
   const router = useRouter();
+  const isLogged = useSessionStorage("isLogged");
+  useEffect(() => {
+    if (!isLogged) {
+      sessionStorage.setItem("isLogged", "true");
+    }
+  }, [isLogged])
 
   const deleteForm = () => {
     fetch("/api/forms/delete", {
@@ -43,62 +50,80 @@ const Home: NextPage = () => {
         <p>Vous êtes sur le point de retirer le formulaire {deleteName}.</p>
         <p>êtes-vous sur de votre action ?</p>
       </Modal>
-      <Layout>
-        <div className="w-full px-64">
-          <table className="w-full bg-white shadow-md rounded">
-            <tbody>
-              <tr className="border-b">
-                <th className="text-left p-2 px-5">Rapport</th>
-                <th className="text-left p-2 px-5">Type</th>
-                <th></th>
-              </tr>
-              {forms?.map(
-                (form: {
-                  nom: string;
-                  type: keyof typeof typeRapport;
-                  id: string;
-                }) => (
-                  <tr key={form.nom} className="border-b">
-                    <td className="p-2 px-5 text-xl">{form.nom}</td>
-                    <td className="p-2 px-5 text-xl">
-                      {typeRapport[form.type]}
-                    </td>
-                    <td className="p-2 px-5 flex justify-end">
-                      <a
-                        href={`/admin/form/${form.id}`}
-                        type="button"
-                        className="mr-3  bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
-                      >
-                        Editer
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          openModal();
-                          setDeleteName(form.nom);
-                          setDeleteId(form.id);
-                        }}
-                        className="bg-red-500 hover:bg-red-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
-                      >
-                        Supprimer
-                      </button>
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
-          <a
-            href={`/admin/form`}
-            type="button"
-            className="mt-3 flex justify-center bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
-          >
-            Ajouter un formulaire
-          </a>
-        </div>
-      </Layout>
+      <div className="w-full px-64">
+        <table className="w-full bg-white shadow-md rounded">
+          <tbody>
+            <tr className="border-b">
+              <th className="text-left p-2 px-5">Rapport</th>
+              <th className="text-left p-2 px-5">Type</th>
+              <th></th>
+            </tr>
+            {forms?.map(
+              (form: {
+                nom: string;
+                type: keyof typeof typeRapport;
+                id: string;
+              }) => (
+                <tr key={form.nom} className="border-b">
+                  <td className="p-2 px-5 text-xl">{form.nom}</td>
+                  <td className="p-2 px-5 text-xl">
+                    {typeRapport[form.type]}
+                  </td>
+                  <td className="p-2 px-5 flex justify-end">
+                    <a
+                      href={`/admin/form/${form.id}`}
+                      type="button"
+                      className="mr-3  bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Editer
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        openModal();
+                        setDeleteName(form.nom);
+                        setDeleteId(form.id);
+                      }}
+                      className="bg-red-500 hover:bg-red-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Supprimer
+                    </button>
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+        <a
+          href={`/admin/form`}
+          type="button"
+          className="mt-3 flex justify-center bg-blue-500 hover:bg-blue-700 text-white p-2 rounded focus:outline-none focus:shadow-outline"
+        >
+          Ajouter un formulaire
+        </a>
+      </div>
     </>
   );
 };
+
+export const getServerSideProps = withIronSessionSsr(async function getServerSideProps({
+  req,
+  res,
+}) {
+  const isLogged = req.session.isLogged;
+
+  if (isLogged === undefined || isLogged === false) {
+    res.setHeader("location", "/login");
+    res.statusCode = 302;
+    res.end();
+  }
+
+  return {
+    props: {
+
+    }
+  };
+},
+  sessionOptions);
 
 export default Home;

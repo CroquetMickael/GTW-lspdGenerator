@@ -10,16 +10,14 @@ datasource db {
 }
 
 model forms {
-  id   String  @id @unique @default(cuid())
-  form Json?
-  nom  String?
-  type String?
+  id         String  @id @unique @default(cuid())
+  form       Json?
+  nom        String?
+  type       String?
   textToEdit Json?
 }
 
-model links {
-  id    String  @id @unique @default(cuid())
-  label String?
-  link  String?
-  type  String?
+model login {
+  id       String @id @unique @default(cuid())
+  password String @unique
 }
