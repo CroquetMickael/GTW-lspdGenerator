@@ -6,7 +6,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    const forms = await formsRepo.getAll();
-    return res.status(200).json(forms);
+    try {
+      const forms = await formsRepo.getAll();
+      return res.status(200).json(forms);
+    }
+    catch (err) {
+      return res.status(400).json(err);
+    }
   }
 }
