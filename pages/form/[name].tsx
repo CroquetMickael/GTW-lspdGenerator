@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button/Button";
 import "formeo/dist/formeo.min.css";
-import { Layout } from "../../Layout/Layout";
 import { Editor } from "../../components/Editor";
 import { typeRapport } from "../../helpers/dictionnary";
 import { useForm } from "../../context/form.context";
@@ -30,12 +29,14 @@ const Post = () => {
   useEffect(() => {
     if (name && formeo && forms.length > 0) {
       const currentForm = forms.find((form: any) => form.id === name);
-      renderer.current = new formeo.FormeoRenderer({
-        renderContainer: ".formeo-wrap",
-      });
-      renderer.current?.render(JSON.parse(currentForm.form));
-      textTomodify.current = currentForm.textToEdit.text;
-      setType(currentForm.type);
+      if (currentForm) {
+        textTomodify.current = currentForm.textToEdit.text;
+        renderer.current = new formeo.FormeoRenderer({
+          renderContainer: ".formeo-wrap",
+        });
+        renderer.current?.render(JSON.parse(currentForm.form));
+        setType(currentForm.type);
+      }
     }
   }, [formeo, forms, name, forms.length]);
 
@@ -68,29 +69,35 @@ const Post = () => {
     });
     setTextModified(localtext);
   };
+
   return (
-    <Layout>
+    <>
       <form className="formeo-wrap" id="form"></form>
-      <label className=" flex flex-col w-1/2">
-        <span className="text-white">Formulaire Généré :</span>
-        {type === typeRapport.Intranet ? (
-          <textarea
-            ref={input}
-            className="h-full text-black whitespace-pre-wrap"
-            value={textModified}
-          />
-        ) : (
-          <Editor
-            ref={input}
-            content={textModified}
-            setContent={setTextModified}
-          />
-        )}
-      </label>
-      <div className="flex gap-6">
-        <Button onClick={() => onClickButton()}>Générer</Button>
-      </div>
-    </Layout>
+      {textTomodify.current === ""
+        ? <p className="bg-red-400 p-8 text-white">Pas de rapport trouvé</p>
+        : <>
+          <label className=" flex flex-col w-1/2">
+            <span className="text-white">Formulaire Généré :</span>
+            {type === typeRapport.Intranet ? (
+              <textarea
+                ref={input}
+                className="h-full text-black whitespace-pre-wrap"
+                value={textModified}
+              />
+            ) : (
+              <Editor
+                ref={input}
+                content={textModified}
+                setContent={setTextModified}
+              />
+            )}
+          </label>
+          <div className="flex gap-6">
+            <Button onClick={() => onClickButton()}>Générer</Button>
+          </div>
+        </>
+      }
+    </>
   );
 };
 

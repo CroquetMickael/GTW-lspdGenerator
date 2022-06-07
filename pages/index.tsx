@@ -1,7 +1,5 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { FormBuilder } from "../components/FormBuilder";
-import { Layout } from "../Layout/Layout";
 
 const Home: NextPage = () => {
   return (
@@ -12,9 +10,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Layout>
-        Un simple générateur de formulaire pour le LSPD de GTW 😊
-      </Layout>
+      Un simple générateur de formulaire pour le LSPD de GTW 😊
     </div>
   );
 };
