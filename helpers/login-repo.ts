@@ -8,13 +8,11 @@ export const loginRepo = {
 };
 
 async function find(password: string) {
-    console.log(password)
     const finded = await prisma.login.findUnique({
         where: {
             password: password,
         },
     });
-    console.log(finded);
     if (finded) {
         return true;
     }
