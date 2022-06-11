@@ -83,7 +83,7 @@ const Post = () => {
             {type === typeRapport.Intranet ? (
               <textarea
                 ref={input}
-                className="h-full text-black whitespace-pre-wrap"
+                className="h-96 text-black whitespace-pre-wrap"
                 value={textModified}
               />
             ) : (
