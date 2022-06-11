@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useForm } from "../context/form.context";
 import { typeRapport } from "../helpers/dictionnary";
-import Image from "next/image"
-import LSPDIcon from "../public/lspd.png"
+import Image from "next/image";
+import LSPDIcon from "../public/lspd.png";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { FaCopy } from "react-icons/fa";
+import { Tooltip } from "../components/Tooltip";
 
 type Links = {
   label: string;
@@ -14,6 +17,8 @@ const Sidebar = () => {
   const [mdcLinks, setMdcLinks] = useState<Links[]>();
   const [intranetLinks, setIntranetLinks] = useState<Links[]>();
   const [forumLinks, setForumLinks] = useState<Links[]>();
+  const { value: name, setLocalValue: setName } = useLocalStorage("name");
+  const [copySuccess, setCopySuccess] = useState("Copier");
   const { forms } = useForm();
   useEffect(() => {
     const links = forms?.map((form: any) => {
@@ -23,10 +28,10 @@ const Sidebar = () => {
         link: `/form/${form.id}`,
       };
     });
-    const mdcLinks = links.filter(
-      (link) => link.type === typeRapport.MDC
+    const mdcLinks = links.filter((link) => link.type === typeRapport.MDC);
+    const intranetLinks = links.filter(
+      (link) => link.type === typeRapport.Intranet
     );
-    const intranetLinks = links.filter((link) => link.type === typeRapport.Intranet);
     const ForumLinks = links.filter((link) => link.type === typeRapport.Forum);
     setIntranetLinks(intranetLinks);
     setMdcLinks(mdcLinks);
@@ -72,20 +77,39 @@ const Sidebar = () => {
             {link.label}
           </a>
         ))}
-
-      </div >
+      </div>
       <div>
         {sessionStorage.getItem("isLogged") === "true" && (
           <a
-            className="block px-4 py-2 mb-4 text-sm font-semibold text-gray-900 rounded-lg dark-mode:bg-gray-700 dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+            className="block px-4 py-2 text-sm font-semibold text-gray-900 rounded-lg dark-mode:bg-gray-700 dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
             href={"/admin"}
           >
             Panneau admin
           </a>
         )}
+        <div className="flex py-2 mb-4 justify-center items-center">
+          <input
+          className="mx-2 border-b-2 border-b-blue-800"
+            value={name || ""}
+            placeholder="Grade Nom Prénom"
+            onChange={(e) => setName(e.target.value)}
+          ></input>
+          <Tooltip message={copySuccess}>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(name || "");
+                setCopySuccess("Copié");
+                setTimeout(() => {
+                  setCopySuccess("Copier");
+                }, 2000);
+              }}
+            >
+              <FaCopy />
+            </button>
+          </Tooltip>
+        </div>
       </div>
     </nav>
-
   );
 };
 
