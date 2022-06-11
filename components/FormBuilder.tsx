@@ -69,6 +69,17 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
             placeholder="Nom du formulaire...."
           />
         </div>
+        <div className="text-white">
+          <p>
+            Il faut rajouter un id sur le(s) champ(s) qui peuvent être
+            autocomplété avec les informations de la personne en place
+          </p>
+          <ul>
+            <li>grade : renvoie uniquement le grade</li>
+            <li>identite : renvoie uniquement le nom et prénom</li>
+            <li>officier : renvoie uniquement le grade nom et prénom</li>
+          </ul>
+        </div>
         <div className="editor-wrap"></div>
         <div>
           <ul className="flex gap-6">
@@ -122,7 +133,7 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
                       nom: formName,
                       type,
                       form: editor?.current?.formData,
-                      textToEdit: { text: content},
+                      textToEdit: { text: content },
                     }),
                   })
                 : fetch("/api/forms/update", {
@@ -132,7 +143,7 @@ const FormBuilder: FunctionComponent<{ formData?: any }> = ({ formData }) => {
                       type,
                       nom: formName,
                       form: editor?.current?.formData,
-                      textToEdit: { text: content},
+                      textToEdit: { text: content },
                     }),
                   });
             }

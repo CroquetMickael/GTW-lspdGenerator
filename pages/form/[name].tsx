@@ -6,6 +6,7 @@ import "formeo/dist/formeo.min.css";
 import { Editor } from "../../components/Editor";
 import { typeRapport } from "../../helpers/dictionnary";
 import { useForm } from "../../context/form.context";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 const Post = () => {
   const [formeo, setFormeo] = useState<any>();
@@ -18,6 +19,9 @@ const Post = () => {
   const [copySuccess, setCopySuccess] = useState("Copier le code");
   const [type, setType] = useState("");
   const input = useRef();
+  const { value: grade } = useLocalStorage("grade");
+  const { value: nom } = useLocalStorage("nom");
+  const { value: prenom } = useLocalStorage("prenom");
 
   useEffect(() => {
     const findFormeo = async () => {
@@ -37,9 +41,22 @@ const Post = () => {
         });
         renderer.current?.render(JSON.parse(currentForm.form));
         setType(currentForm.type);
+        let input: HTMLInputElement;
+        input = document.getElementById("officier");
+        if (input) {
+          input.value = `${grade} ${nom} ${prenom}`;
+        }
+        input = document.getElementById("grade");
+        if (input) {
+          input.value = `${grade}`;
+        }
+        input = document.getElementById("identite");
+        if (input) {
+          input.value = `${nom} ${prenom}`;
+        }
       }
     }
-  }, [formeo, forms, name, forms.length]);
+  }, [formeo, forms, name, forms.length, grade, nom, prenom]);
 
   const onClickButton = () => {
     let localtext = textTomodify.current;

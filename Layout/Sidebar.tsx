@@ -4,8 +4,6 @@ import { typeRapport } from "../helpers/dictionnary";
 import Image from "next/image";
 import LSPDIcon from "../public/lspd.png";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { FaCopy } from "react-icons/fa";
-import { Tooltip } from "../components/Tooltip";
 
 type Links = {
   label: string;
@@ -17,8 +15,9 @@ const Sidebar = () => {
   const [mdcLinks, setMdcLinks] = useState<Links[]>();
   const [intranetLinks, setIntranetLinks] = useState<Links[]>();
   const [forumLinks, setForumLinks] = useState<Links[]>();
-  const { value: name, setLocalValue: setName } = useLocalStorage("name");
-  const [copySuccess, setCopySuccess] = useState("Copier");
+  const { value: grade, setLocalValue: setGrade } = useLocalStorage("grade");
+  const { value: nom, setLocalValue: setNom } = useLocalStorage("nom");
+  const { value: prenom, setLocalValue: setPrenom } = useLocalStorage("prenom");
   const { forms } = useForm();
   useEffect(() => {
     const links = forms?.map((form: any) => {
@@ -89,24 +88,23 @@ const Sidebar = () => {
         )}
         <div className="flex py-2 mb-4 justify-center items-center">
           <input
-          className="mx-2 border-b-2 border-b-blue-800"
-            value={name || ""}
-            placeholder="Grade Nom Prénom"
-            onChange={(e) => setName(e.target.value)}
+            className="w-24 mx-2 border-b-2 border-b-blue-800"
+            value={grade || ""}
+            placeholder="Grade"
+            onChange={(e) => setGrade(e.target.value)}
           ></input>
-          <Tooltip message={copySuccess}>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(name || "");
-                setCopySuccess("Copié");
-                setTimeout(() => {
-                  setCopySuccess("Copier");
-                }, 2000);
-              }}
-            >
-              <FaCopy />
-            </button>
-          </Tooltip>
+          <input
+            className="w-24 border-b-2 border-b-blue-800"
+            value={nom || ""}
+            placeholder="Nom"
+            onChange={(e) => setNom(e.target.value)}
+          ></input>
+          <input
+            className="mx-2 w-24 border-b-2 border-b-blue-800"
+            value={prenom || ""}
+            placeholder="Prénom"
+            onChange={(e) => setPrenom(e.target.value)}
+          ></input>
         </div>
       </div>
     </nav>
