@@ -15,6 +15,7 @@ const Post = () => {
   const { name } = router.query;
   const textTomodify = useRef("");
   const [textModified, setTextModified] = useState("");
+  const [copySuccess, setCopySuccess] = useState("Copier le code");
   const [type, setType] = useState("");
   const input = useRef();
 
@@ -73,9 +74,10 @@ const Post = () => {
   return (
     <>
       <form className="formeo-wrap" id="form"></form>
-      {textTomodify.current === ""
-        ? <p className="bg-red-400 p-8 text-white">Pas de rapport trouvé</p>
-        : <>
+      {textTomodify.current === "" ? (
+        <p className="bg-red-400 p-8 text-white">Pas de rapport trouvé</p>
+      ) : (
+        <>
           <label className=" flex flex-col w-1/2">
             <span className="text-white">Formulaire Généré :</span>
             {type === typeRapport.Intranet ? (
@@ -91,12 +93,31 @@ const Post = () => {
                 setContent={setTextModified}
               />
             )}
+            <textarea id="copyText" className="hidden" value={textModified} />
           </label>
+          {type === typeRapport.Forum && (
+            <span className="text-white py-2">
+              Pour les rapports Forum GTW, il faut copier manuellement.
+            </span>
+          )}
           <div className="flex gap-6">
             <Button onClick={() => onClickButton()}>Générer</Button>
+            {type !== typeRapport.Forum && (
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(textModified);
+                  setCopySuccess("Copie du code effectué :)");
+                  setTimeout(() => {
+                    setCopySuccess("Copier le code");
+                  }, 2000);
+                }}
+              >
+                {copySuccess}
+              </Button>
+            )}
           </div>
         </>
-      }
+      )}
     </>
   );
 };
